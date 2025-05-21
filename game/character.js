@@ -4,6 +4,11 @@
 class CharacterSystem {
     constructor(game) {
         this.game = game;
+        this.characterCreationElement = document.getElementById('character-creation');
+        
+        // Create character creation form
+        this.createCharacterForm();
+        
         this.defaultStats = {
             warrior: { strength: 10, intelligence: 4, agility: 6, vitality: 10 },
             mage: { strength: 3, intelligence: 12, agility: 5, vitality: 6 },
@@ -13,25 +18,159 @@ class CharacterSystem {
     }
     
     /**
-     * Start the character creation process
+     * Create the character creation form
+     */
+    createCharacterForm() {
+        // Create form
+        const form = document.createElement('div');
+        form.className = 'character-form';
+        
+        // Create title
+        const title = document.createElement('h2');
+        title.textContent = 'Character Creation';
+        form.appendChild(title);
+        
+        // Name input
+        const nameGroup = document.createElement('div');
+        nameGroup.className = 'form-group';
+        
+        const nameLabel = document.createElement('label');
+        nameLabel.textContent = 'Name:';
+        nameGroup.appendChild(nameLabel);
+        
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.id = 'character-name';
+        nameInput.placeholder = 'Enter character name';
+        nameGroup.appendChild(nameInput);
+        
+        form.appendChild(nameGroup);
+        
+        // Class selection
+        const classGroup = document.createElement('div');
+        classGroup.className = 'form-group';
+        
+        const classLabel = document.createElement('label');
+        classLabel.textContent = 'Class:';
+        classGroup.appendChild(classLabel);
+        
+        const classSelect = document.createElement('select');
+        classSelect.id = 'character-class';
+        
+        const classes = [
+            { value: 'warrior', name: 'Warrior' },
+            { value: 'mage', name: 'Mage' },
+            { value: 'ranger', name: 'Ranger' },
+            { value: 'rogue', name: 'Rogue' }
+        ];
+        
+        for (const characterClass of classes) {
+            const option = document.createElement('option');
+            option.value = characterClass.value;
+            option.textContent = characterClass.name;
+            classSelect.appendChild(option);
+        }
+        
+        classGroup.appendChild(classSelect);
+        form.appendChild(classGroup);
+        
+        // Appearance selection
+        const appearanceGroup = document.createElement('div');
+        appearanceGroup.className = 'form-group';
+        
+        const appearanceLabel = document.createElement('label');
+        appearanceLabel.textContent = 'Appearance:';
+        appearanceGroup.appendChild(appearanceLabel);
+        
+        const appearanceSelect = document.createElement('select');
+        appearanceSelect.id = 'character-appearance';
+        
+        const appearances = [
+            { value: 'type-a', name: 'Type A' },
+            { value: 'type-b', name: 'Type B' },
+            { value: 'type-c', name: 'Type C' }
+        ];
+        
+        for (const appearance of appearances) {
+            const option = document.createElement('option');
+            option.value = appearance.value;
+            option.textContent = appearance.name;
+            appearanceSelect.appendChild(option);
+        }
+        
+        appearanceGroup.appendChild(appearanceSelect);
+        form.appendChild(appearanceGroup);
+        
+        // Form buttons
+        const buttonGroup = document.createElement('div');
+        buttonGroup.className = 'form-buttons';
+        
+        const cancelButton = document.createElement('button');
+        cancelButton.textContent = 'Cancel';
+        cancelButton.onclick = () => this.hideCharacterCreation();
+        buttonGroup.appendChild(cancelButton);
+        
+        const createButton = document.createElement('button');
+        createButton.textContent = 'Create Character';
+        createButton.onclick = () => this.submitCharacterForm();
+        buttonGroup.appendChild(createButton);
+        
+        form.appendChild(buttonGroup);
+        
+        // Add form to character creation element
+        this.characterCreationElement.innerHTML = '';
+        this.characterCreationElement.appendChild(form);
+        
+        // Store callback reference
+        this.onCreateCallback = null;
+    }
+    
+    /**
+     * Show character creation screen
      */
     showCharacterCreation(onComplete) {
-        const ui = this.game.engine.ui;
+        this.characterCreationElement.style.display = 'flex';
+        this.onCreateCallback = onComplete;
+    }
+    
+    /**
+     * Hide character creation screen
+     */
+    hideCharacterCreation() {
+        this.characterCreationElement.style.display = 'none';
+        this.onCreateCallback = null;
+    }
+    
+    /**
+     * Handle form submission
+     */
+    submitCharacterForm() {
+        const nameInput = document.getElementById('character-name');
+        const classSelect = document.getElementById('character-class');
+        const appearanceSelect = document.getElementById('character-appearance');
         
-        ui.showCharacterCreation((character) => {
-            console.log('Character created:', character);
-            
-            // Create player with the character data
-            const player = this.createCharacter(
-                character.name,
-                character.class,
-                character.appearance
-            );
-            
-            if (onComplete) {
-                onComplete(player);
-            }
-        });
+        const characterData = {
+            name: nameInput.value || 'Player',
+            class: classSelect.value,
+            appearance: appearanceSelect.value
+        };
+        
+        console.log('Character created:', characterData);
+        
+        // Create player with the character data
+        const player = this.createCharacter(
+            characterData.name,
+            characterData.class,
+            characterData.appearance
+        );
+        
+        // Hide character creation
+        this.hideCharacterCreation();
+        
+        // Call completion callback if exists
+        if (this.onCreateCallback) {
+            this.onCreateCallback(player);
+        }
     }
     
     /**

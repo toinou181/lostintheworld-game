@@ -1,9 +1,12 @@
 /**
  * Player - Player entity in the game
  */
-class Player extends Entity {
+class Player {
     constructor(x, y, name, characterClass, appearance) {
-        super(x, y, 30, 50);
+        this.x = x;
+        this.y = y;
+        this.width = 30;
+        this.height = 50;
         this.name = name || 'Player';
         this.characterClass = characterClass || 'warrior';
         this.appearance = appearance || 'type-a';
@@ -11,6 +14,7 @@ class Player extends Entity {
         this.lastPosition = { x, y }; // Last position (for collision resolution)
         this.isLocalPlayer = false;
         this.id = null; // Player ID for networking
+        this.velocity = { x: 0, y: 0 }; // Current velocity
         
         // Colors for different character classes
         this.classColors = {
@@ -24,31 +28,28 @@ class Player extends Entity {
     /**
      * Update player state
      */
-    update(deltaTime) {
+    update(deltaTime, game) {
         if (!this.isLocalPlayer) return;
         
         // Store last position for collision resolution
         this.lastPosition.x = this.x;
         this.lastPosition.y = this.y;
         
-        const engine = window.game.engine;
-        const input = engine.input;
-        
         // Reset velocity
         this.velocity.x = 0;
         this.velocity.y = 0;
         
         // Handle movement input
-        if (input.isKeyPressed('KeyW') || input.isKeyPressed('ArrowUp')) {
+        if (game.isKeyPressed('KeyW') || game.isKeyPressed('ArrowUp')) {
             this.velocity.y = -this.speed;
         }
-        if (input.isKeyPressed('KeyS') || input.isKeyPressed('ArrowDown')) {
+        if (game.isKeyPressed('KeyS') || game.isKeyPressed('ArrowDown')) {
             this.velocity.y = this.speed;
         }
-        if (input.isKeyPressed('KeyA') || input.isKeyPressed('ArrowLeft')) {
+        if (game.isKeyPressed('KeyA') || game.isKeyPressed('ArrowLeft')) {
             this.velocity.x = -this.speed;
         }
-        if (input.isKeyPressed('KeyD') || input.isKeyPressed('ArrowRight')) {
+        if (game.isKeyPressed('KeyD') || game.isKeyPressed('ArrowRight')) {
             this.velocity.x = this.speed;
         }
         
@@ -60,7 +61,8 @@ class Player extends Entity {
         }
         
         // Apply velocity
-        super.update(deltaTime);
+        this.x += this.velocity.x * deltaTime;
+        this.y += this.velocity.y * deltaTime;
         
         // Check for collisions with world objects
         const world = window.game.world;
@@ -70,14 +72,10 @@ class Player extends Entity {
             this.y = this.lastPosition.y;
         }
         
-        // Send position update to server if we've moved
-        if (this.x !== this.lastPosition.x || this.y !== this.lastPosition.y) {
-            if (engine.network && engine.network.connected) {
-                engine.network.send('player_move', {
-                    x: this.x,
-                    y: this.y
-                });
-            }
+        // Handle multiplayer position updates if needed
+        if (game.isMultiplayer && this.isLocalPlayer) {
+            // We'd normally send updates to the server here, but we're keeping it simple for now
+            // In a real implementation, this would trigger network updates
         }
     }
     

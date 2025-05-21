@@ -2,11 +2,11 @@
  * World - Manages the game world and its rendering
  */
 class World {
-    constructor(engine) {
-        this.engine = engine;
+    constructor(game) {
+        this.game = game;
         this.tileSize = 64;
-        this.viewportWidth = this.engine.canvas.width;
-        this.viewportHeight = this.engine.canvas.height;
+        this.viewportWidth = this.game.canvas.width;
+        this.viewportHeight = this.game.canvas.height;
         
         // Camera position (center of viewport in world coordinates)
         this.cameraX = 0;
@@ -61,7 +61,7 @@ class World {
         }
         
         // Create the pattern
-        return this.engine.ctx.createPattern(patternCanvas, 'repeat');
+        return this.game.ctx.createPattern(patternCanvas, 'repeat');
     }
     
     /**
@@ -91,6 +91,10 @@ class World {
      * Update world state
      */
     update(deltaTime) {
+        // Update viewport dimensions if window was resized
+        this.viewportWidth = this.game.canvas.width;
+        this.viewportHeight = this.game.canvas.height;
+        
         // Update camera position if following player
         if (window.game && window.game.player) {
             this.cameraX = window.game.player.x;

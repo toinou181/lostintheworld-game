@@ -4,7 +4,11 @@
 class MenuSystem {
     constructor(game) {
         this.game = game;
-        this.ui = game.engine.ui;
+        this.menus = {};
+        this.activeMenu = null;
+        
+        // Create menu container
+        this.menuContainer = document.getElementById('menu-container');
         
         // Create menus
         this.createMainMenu();
@@ -16,10 +20,65 @@ class MenuSystem {
     }
     
     /**
+     * Create a menu with title and options
+     */
+    createMenu(id, title, options) {
+        // Create menu element
+        const menu = document.createElement('div');
+        menu.className = 'menu';
+        menu.id = id;
+        menu.style.display = 'none';
+        
+        // Create title
+        const titleElement = document.createElement('h1');
+        titleElement.textContent = title;
+        menu.appendChild(titleElement);
+        
+        // Create buttons
+        for (const option of options) {
+            const button = document.createElement('button');
+            button.className = 'menu-button';
+            button.textContent = option.text;
+            button.addEventListener('click', option.action);
+            menu.appendChild(button);
+        }
+        
+        // Add to menu container
+        this.menuContainer.appendChild(menu);
+        
+        // Store reference
+        this.menus[id] = menu;
+        
+        return menu;
+    }
+    
+    /**
+     * Show a specific menu
+     */
+    showMenu(menuId) {
+        this.hideAllMenus();
+        const menu = this.menus[menuId];
+        if (menu) {
+            menu.style.display = 'block';
+            this.activeMenu = menuId;
+        }
+    }
+    
+    /**
+     * Hide all menus
+     */
+    hideAllMenus() {
+        for (const menuId in this.menus) {
+            this.menus[menuId].style.display = 'none';
+        }
+        this.activeMenu = null;
+    }
+    
+    /**
      * Create main menu
      */
     createMainMenu() {
-        this.ui.createMenu('main-menu', 'Lost in the World', [
+        this.createMenu('main-menu', 'Lost in the World', [
             { 
                 text: 'New Game', 
                 action: () => this.startNewGame() 
@@ -30,11 +89,11 @@ class MenuSystem {
             },
             { 
                 text: 'Multiplayer', 
-                action: () => this.ui.showMenu('multiplayer-menu') 
+                action: () => this.showMenu('multiplayer-menu') 
             },
             { 
                 text: 'Options', 
-                action: () => this.ui.showMenu('options-menu') 
+                action: () => this.showMenu('options-menu') 
             },
             { 
                 text: 'Credits',
@@ -47,7 +106,7 @@ class MenuSystem {
      * Create pause menu
      */
     createPauseMenu() {
-        this.ui.createMenu('pause-menu', 'Game Paused', [
+        this.createMenu('pause-menu', 'Game Paused', [
             { 
                 text: 'Resume', 
                 action: () => this.resumeGame() 
@@ -58,7 +117,7 @@ class MenuSystem {
             },
             { 
                 text: 'Options', 
-                action: () => this.ui.showMenu('options-menu') 
+                action: () => this.showMenu('options-menu') 
             },
             { 
                 text: 'Quit to Main Menu', 
@@ -71,7 +130,7 @@ class MenuSystem {
      * Create options menu
      */
     createOptionsMenu() {
-        const optionsMenu = this.ui.createMenu('options-menu', 'Options', [
+        const optionsMenu = this.createMenu('options-menu', 'Options', [
             { 
                 text: 'Sound: On', 
                 action: (e) => this.toggleSound(e.target) 
@@ -86,7 +145,7 @@ class MenuSystem {
             },
             { 
                 text: 'Back', 
-                action: () => this.ui.showMenu('main-menu') 
+                action: () => this.showMenu('main-menu') 
             }
         ]);
     }
@@ -95,7 +154,7 @@ class MenuSystem {
      * Create multiplayer menu
      */
     createMultiplayerMenu() {
-        this.ui.createMenu('multiplayer-menu', 'Multiplayer', [
+        this.createMenu('multiplayer-menu', 'Multiplayer', [
             { 
                 text: 'Join Game', 
                 action: () => this.joinMultiplayerGame() 
@@ -106,7 +165,7 @@ class MenuSystem {
             },
             { 
                 text: 'Back', 
-                action: () => this.ui.showMenu('main-menu') 
+                action: () => this.showMenu('main-menu') 
             }
         ]);
     }
@@ -116,14 +175,14 @@ class MenuSystem {
      */
     showMainMenu() {
         this.hideGameCanvas();
-        this.ui.showMenu('main-menu');
+        this.showMenu('main-menu');
     }
     
     /**
      * Start a new game
      */
     startNewGame() {
-        this.ui.hideAllMenus();
+        this.hideAllMenus();
         this.game.characterSystem.showCharacterCreation((player) => {
             this.game.startGame(player);
         });
@@ -135,7 +194,7 @@ class MenuSystem {
     continueGame() {
         const player = this.game.characterSystem.loadCharacter();
         if (player) {
-            this.ui.hideAllMenus();
+            this.hideAllMenus();
             this.game.startGame(player);
         } else {
             alert('No saved game found!');
@@ -160,7 +219,7 @@ class MenuSystem {
      * Resume the game from pause
      */
     resumeGame() {
-        this.ui.hideAllMenus();
+        this.hideAllMenus();
         this.showGameCanvas();
         this.game.running = true;
     }
@@ -170,7 +229,7 @@ class MenuSystem {
      */
     quitToMainMenu() {
         this.game.running = false;
-        this.ui.hideAllMenus();
+        this.hideAllMenus();
         this.showMainMenu();
     }
     
@@ -203,14 +262,14 @@ class MenuSystem {
      * Show credits
      */
     showCredits() {
-        alert('Lost in the World\n\nCreated with TonioEngine\nDeveloped by Tonio');
+        alert('Lost in the World\n\nDeveloped by Tonio');
     }
     
     /**
      * Join a multiplayer game
      */
     joinMultiplayerGame() {
-        this.ui.hideAllMenus();
+        this.hideAllMenus();
         this.game.characterSystem.showCharacterCreation((player) => {
             this.game.startMultiplayerGame(player, false);
         });
@@ -220,7 +279,7 @@ class MenuSystem {
      * Host a multiplayer game
      */
     hostMultiplayerGame() {
-        this.ui.hideAllMenus();
+        this.hideAllMenus();
         this.game.characterSystem.showCharacterCreation((player) => {
             this.game.startMultiplayerGame(player, true);
         });
