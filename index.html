@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost in the World</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        <div id="menu-container"></div>
+        <div id="character-creation"></div>
+        <div id="loading-screen">
+            <h1>Loading TonioEngine...</h1>
+        </div>
+    </div>
+
+    <!-- Engine -->
+    <script src="engine/core.js"></script>
+    <script src="engine/input.js"></script>
+    <script src="engine/entity.js"></script>
+    <script src="engine/ui.js"></script>
+    <script src="engine/network.js"></script>
+
+    <!-- Game -->
+    <script src="game/world.js"></script>
+    <script src="game/player.js"></script>
+    <script src="game/character.js"></script>
+    <script src="game/menu.js"></script>
+    <script src="game/main.js"></script>
+</body>
+</html>
